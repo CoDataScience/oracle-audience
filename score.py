@@ -15,7 +15,7 @@ def read_submission(file):
 def read_spends(file):
     spend_lookup = {}
     total_possible = 0
-    total_responders = 0
+    spenders = set()
     with open(file) as f:
         for l in f:
             hhid, spend = l.strip().split(',')
@@ -24,8 +24,8 @@ def read_spends(file):
             spend_lookup[hhid] = spend
             total_possible += spend
             if spend > 0:
-                total_responders += 1
-    return spend_lookup, total_possible, total_responders
+                spenders.add(hhid)
+    return spend_lookup, total_possible, spenders
 
 def filter_advertise(submission):
     return submission[submission['advertise'] != 0]
@@ -40,11 +40,11 @@ def compute_revenue(submission, spend_lookup):
     return revenue
 
 
-def compute_n_responders(submission, spend_lookup):
+def compute_n_responders(submission, spenders):
     n_responders = 0
 
     for ix, row in submission.iterrows():
-        if row.household_id in spend_lookup:
+        if row.household_id in spenders:
             n_responders += 1
 
     return n_responders
@@ -54,16 +54,16 @@ if __name__ == '__main__':
     spend_file = sys.argv[1]
     submission_file = sys.argv[2]
 
-    spend_lookup, total_possible, total_responders = read_spends(spend_file)
+    spend_lookup, total_possible, spenders = read_spends(spend_file)
 
     raw_submission = read_submission(submission_file)
     filtered_submission = filter_advertise(raw_submission)
 
     revenue = compute_revenue(filtered_submission, spend_lookup)
-    n_responders = compute_n_responders(filtered_submission, spend_lookup)
+    n_responders = compute_n_responders(filtered_submission, spenders)
 
     print('Revenue:', revenue)
     print('Fraction of Possible Revenue:', revenue / total_possible)
     print('Number of Responders:', n_responders)
-    print('Fraction of Possible Responders', n_responders / total_responders)
+    print('Fraction of Possible Responders', n_responders / len(spenders))
 
