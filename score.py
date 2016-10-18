@@ -15,6 +15,7 @@ def read_submission(file):
 def read_spends(file):
     spend_lookup = {}
     total_possible = 0
+    total_responders = 0
     with open(file) as f:
         for l in f:
             hhid, spend = l.strip().split(',')
@@ -22,7 +23,9 @@ def read_spends(file):
             spend = float(spend)
             spend_lookup[hhid] = spend
             total_possible += spend
-    return spend_lookup, total_possible
+            if spend > 0:
+                total_responders += 1
+    return spend_lookup, total_possible, total_responders
 
 def filter_advertise(submission):
     return submission[submission['advertise'] != 0]
@@ -51,7 +54,7 @@ if __name__ == '__main__':
     spend_file = sys.argv[1]
     submission_file = sys.argv[2]
 
-    spend_lookup, total_possible = read_spends(spend_file)
+    spend_lookup, total_possible, total_responders = read_spends(spend_file)
 
     raw_submission = read_submission(submission_file)
     filtered_submission = filter_advertise(raw_submission)
@@ -62,5 +65,5 @@ if __name__ == '__main__':
     print('Revenue:', revenue)
     print('Fraction of Possible Revenue:', revenue / total_possible)
     print('Number of Responders:', n_responders)
-    print('Fraction of Possible Responders', n_responders / len(spend_lookup))
+    print('Fraction of Possible Responders', n_responders / total_responders)
 
