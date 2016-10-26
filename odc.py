@@ -1,5 +1,4 @@
 import os
-import glob
 import random
 import smart_open
 import pandas as pd
@@ -109,8 +108,7 @@ def is_positive_example(line):
 def sample(seed, n_samples, input_path, output_path):
     if os.path.isdir(input_path):
         print('Directory detected, using all files in directory')
-        glob_path = os.path.join(input_path, '/*')
-        files = [smart_open.smart_open(p) for p in glob.glob(glob_path)]
+        files = [smart_open.smart_open(os.path.join(input_path, p)) for p in os.listdir(input_path)]
     else:
         print('Single file detected')
         files = [smart_open.smart_open(input_path)]
