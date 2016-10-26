@@ -120,14 +120,16 @@ def sample(seed, n_samples, input_path, output_path):
     if seed is not None:
         random.seed(seed)
 
-    examples = []
     total_positive = int(n_samples * POSITIVE_RATIO)
     total_negative = n_samples - total_positive
+
+    print('Finding a total of {} examples, {} positive and {} negative'.format(
+        n_samples, total_positive, total_negative))
 
     n_positive = 0
     n_negative = 0
 
-    while len(examples) < n_samples:
+    while n_positive + n_negative < n_samples:
         random_file = random.choice(files)
         try:
             line = next(random_file).decode('utf8')
