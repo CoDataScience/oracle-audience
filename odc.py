@@ -130,11 +130,15 @@ def sample(seed, n_samples, input_path, output_path):
     n_negative = 0
 
     while n_positive + n_negative < n_samples:
-        random_file = random.choice(files)
+        if len(files) == 0:
+            raise Exception('There are not enough files to get {} examples'.format(n_samples))
+        random_index = random.randrange(len(files))
+        random_file = files[random_index]
         try:
             line = next(random_file).decode('utf8')
         except StopIteration:
-            continue
+            random_file.close()
+            files.pop(random_index)
 
         is_positive = is_positive_example(line)
 
