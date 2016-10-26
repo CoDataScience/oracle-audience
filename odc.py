@@ -130,7 +130,7 @@ def sample(seed, n_samples, input_path, output_path):
     while len(examples) < n_samples:
         random_file = random.choice(files)
         try:
-            line = next(random_file)
+            line = next(random_file).decode('utf8')
         except StopIteration:
             continue
 
