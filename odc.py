@@ -107,10 +107,7 @@ def is_positive_example(line):
 @click.argument('input_path')
 @click.argument('output_path')
 def sample(seed, n_samples, input_path, output_path):
-    if os.path.isdir(input_path):
-        files = [smart_open.smart_open(p) for p in glob.glob(input_path)]
-    else:
-        files = [smart_open.smart_open(input_path)]
+    files = [smart_open.smart_open(p) for p in glob.glob(input_path)]
 
     output = open(output_path, 'w')
 
