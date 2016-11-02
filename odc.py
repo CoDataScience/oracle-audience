@@ -17,11 +17,11 @@ def read_submission(file):
 
 
 def validate_submission(submission, n_advertise):
-    columns = df.columns.values
+    columns = submission.columns.values
     assert len(columns) == 2, 'There must be only two columns'
     assert columns[0] == 'household_id', 'The first column must be household_id'
     assert columns[1] == 'advertise', 'The second column must be advertise'
-    n_found = len(df[df['advertise'] != 0])
+    n_found = len(submission[submission['advertise'] != 0])
     assert n_found == n_advertise, 'There must be exactly {} non-zeros and found {}'.format(
         n_advertise, n_found)
 
@@ -78,12 +78,12 @@ def cli():
 def score(ratio, spend_file, submission_file):
     spend_lookup, total_possible, spenders = read_spends(spend_file)
 
-    raw_submission = read_submission(submission_file, n_advertise)
+    raw_submission = read_submission(submission_file)
     if ratio:
         n_examples = len(raw_submission)
         n_advertise = int(n_examples * POSITIVE_RATIO)
         print("Using {} total examples, expecting exactly {} advertisements".format(
-            n_examples, n_advertise, POSITIVE_RATIO))
+            n_examples, n_advertise))
     else:
         n_advertise = 100000
     validate_submission(raw_submission, n_advertise)
