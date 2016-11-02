@@ -105,7 +105,7 @@ def is_positive_example(line):
 
 
 @cli.command()
-@click.option('--seed')
+@click.option('--seed', type=int)
 @click.argument('n_samples', type=int)
 @click.argument('input_path', type=str)
 @click.argument('output_path', type=str)
