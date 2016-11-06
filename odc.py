@@ -91,8 +91,6 @@ def score(ratio, ordered, spend_file, submission_file):
     if ratio:
         n_examples = len(ordered_hhids)
         n_advertise = int(n_examples * POSITIVE_RATIO)
-        print("Using {} total examples, expecting exactly {} advertisements".format(
-            n_examples, n_advertise))
     else:
         n_advertise = 100000
 
