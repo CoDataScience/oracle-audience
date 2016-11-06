@@ -11,24 +11,21 @@ N_TOTAL = N_POSITIVE + N_NEGATIVE
 POSITIVE_RATIO = N_POSITIVE / N_TOTAL
 
 
-def read_submission(file):
+def read_submission(file, ordered):
     df = pd.read_csv(file)
-    return df
-
-
-def validate_submission(submission, n_advertise):
-    columns = submission.columns.values
-    assert len(columns) == 2, 'There must be only two columns'
-    assert columns[0] == 'household_id', 'The first column must be household_id'
-    assert columns[1] == 'advertise', 'The second column must be advertise'
-    n_found = len(submission[submission['advertise'] != 0])
-    assert n_found == n_advertise, 'There must be exactly {} non-zeros and found {}'.format(
-        n_advertise, n_found)
+    columns = df.columns.values
+    if ordered:
+        assert len(columns) == 1, 'For ordered scoring there must be only one column'
+        assert columns[0] == 'household_id', 'The first column must be household_id'
+    else:
+        assert len(columns) == 2, 'There must be only two columns'
+        assert columns[0] == 'household_id', 'The first column must be household_id'
+        assert columns[1] == 'advertise', 'The second column must be advertise'
+    return df.sort_values('advertise', ascending=False)['household_id'].values
 
 
 def read_spends(file):
     spend_lookup = {}
-    total_possible = 0
     spenders = set()
     with open(file) as f:
         for l in f:
@@ -36,33 +33,37 @@ def read_spends(file):
             hhid = int(hhid)
             spend = float(spend)
             spend_lookup[hhid] = spend
-            total_possible += spend
             if spend > 0:
                 spenders.add(hhid)
-    return spend_lookup, total_possible, spenders
+    return spend_lookup, spenders
 
 
-def filter_advertise(submission):
-    return submission[submission['advertise'] != 0]
-
-
-def compute_revenue(submission, spend_lookup):
+def compute_revenue(all_hhids, advertise_hhids, spend_lookup):
     revenue = 0
+    total_revenue = 0
 
-    for ix, row in submission.iterrows():
-        revenue += spend_lookup[row.household_id]
+    for hhid in advertise_hhids:
+        revenue += spend_lookup[hhid]
 
-    return revenue
+    for hhid in all_hhids:
+        total_revenue += spend_lookup[hhid]
+
+    return revenue, total_revenue
 
 
-def compute_n_responders(submission, spenders):
+def compute_n_responders(all_hhids, advertise_hhids, spenders):
     n_responders = 0
+    total_n_responders = 0
 
-    for ix, row in submission.iterrows():
-        if row.household_id in spenders:
+    for hhid in advertise_hhids:
+        if hhid in spenders:
             n_responders += 1
 
-    return n_responders
+    for hhid in all_hhids:
+        if hhid in spenders:
+            total_n_responders += 1
+
+    return n_responders, total_n_responders
 
 
 @click.group()
@@ -73,30 +74,34 @@ def cli():
 @cli.command()
 @click.option('--ratio', is_flag=True,
               help='Score by computing top K using ratio instead of K=100,000')
+@click.option('--ordered', is_flag=True,
+              help='Accept submission as ordered list of hhids from most to least likely to spend')
 @click.argument('spend_file')
 @click.argument('submission_file')
-def score(ratio, spend_file, submission_file):
-    spend_lookup, total_possible, spenders = read_spends(spend_file)
+def score(ratio, ordered, spend_file, submission_file):
+    spend_lookup, spenders = read_spends(spend_file)
 
-    raw_submission = read_submission(submission_file)
+    ordered_hhids = read_submission(submission_file, ordered)
     if ratio:
-        n_examples = len(raw_submission)
+        n_examples = len(ordered_hhids)
         n_advertise = int(n_examples * POSITIVE_RATIO)
         print("Using {} total examples, expecting exactly {} advertisements".format(
             n_examples, n_advertise))
     else:
         n_advertise = 100000
-    validate_submission(raw_submission, n_advertise)
 
-    filtered_submission = filter_advertise(raw_submission)
+    advertize_hhids = ordered_hhids[0:n_advertise]
 
-    revenue = compute_revenue(filtered_submission, spend_lookup)
-    n_responders = compute_n_responders(filtered_submission, spenders)
+    revenue, total_revenue = compute_revenue(ordered_hhids, advertize_hhids, spend_lookup)
+    n_responders, n_total_responders = compute_n_responders(
+        ordered_hhids, advertize_hhids, spenders)
 
     print('Revenue:', revenue)
-    print('Fraction of Possible Revenue:', revenue / total_possible)
+    print('Possible Revenue:', total_revenue)
+    print('Fraction of Possible Revenue:', revenue / total_revenue)
     print('Number of Responders:', n_responders)
-    print('Fraction of Possible Responders', n_responders / len(spenders))
+    print('Possible Number of Responders:', n_total_responders)
+    print('Fraction of Possible Responders', n_responders / n_total_responders)
 
 
 def is_positive_example(line):
