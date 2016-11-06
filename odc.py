@@ -79,6 +79,12 @@ def cli():
 @click.argument('spend_file')
 @click.argument('submission_file')
 def score(ratio, ordered, spend_file, submission_file):
+    print('Scoring Options')
+    print('ratio:', ratio)
+    print('ordered:', ordered)
+    print('spend_file:', spend_file)
+    print('submission_file:', submission_file)
+
     spend_lookup, spenders = read_spends(spend_file)
 
     ordered_hhids = read_submission(submission_file, ordered)
