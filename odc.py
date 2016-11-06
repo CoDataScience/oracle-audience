@@ -17,11 +17,12 @@ def read_submission(file, ordered):
     if ordered:
         assert len(columns) == 1, 'For ordered scoring there must be only one column'
         assert columns[0] == 'household_id', 'The first column must be household_id'
+        return df['household_id'].values
     else:
         assert len(columns) == 2, 'There must be only two columns'
         assert columns[0] == 'household_id', 'The first column must be household_id'
         assert columns[1] == 'advertise', 'The second column must be advertise'
-    return df.sort_values('advertise', ascending=False)['household_id'].values
+        return df.sort_values('advertise', ascending=False)['household_id'].values
 
 
 def read_spends(file):
