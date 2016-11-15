@@ -104,14 +104,14 @@ def score(ratio, ordered, machine, spend_file, submission_file):
         ordered_hhids, advertize_hhids, spenders)
 
     if machine:
-        print("{} {}".format(revenue / total_revenue, n_responders / n_total_responders))
+        print("{} {}".format(1.0 * revenue / total_revenue, 1.0 * n_responders / n_total_responders))
     else:
         print('Revenue:', revenue)
         print('Possible Revenue:', total_revenue)
-        print('Fraction of Possible Revenue:', revenue / total_revenue)
+        print('Fraction of Possible Revenue:', 1.0 * revenue / total_revenue)
         print('Number of Responders:', n_responders)
         print('Possible Number of Responders:', n_total_responders)
-        print('Fraction of Possible Responders', n_responders / n_total_responders)
+        print('Fraction of Possible Responders', 1.0 * n_responders / n_total_responders)
 
 
 def is_positive_example(line):
