@@ -77,14 +77,16 @@ def cli():
               help='Score by computing top K using ratio instead of K=100,000')
 @click.option('--ordered', is_flag=True,
               help='Accept submission as ordered list of hhids from most to least likely to spend')
+@click.option('--machine', is_flag=True, help="Output is machine readable")
 @click.argument('spend_file')
 @click.argument('submission_file')
-def score(ratio, ordered, spend_file, submission_file):
-    print('Scoring Options')
-    print('ratio:', ratio)
-    print('ordered:', ordered)
-    print('spend_file:', spend_file)
-    print('submission_file:', submission_file)
+def score(ratio, ordered, machine, spend_file, submission_file):
+    if not machine:
+        print('Scoring Options')
+        print('ratio:', ratio)
+        print('ordered:', ordered)
+        print('spend_file:', spend_file)
+        print('submission_file:', submission_file)
 
     spend_lookup, spenders = read_spends(spend_file)
 
@@ -101,12 +103,15 @@ def score(ratio, ordered, spend_file, submission_file):
     n_responders, n_total_responders = compute_n_responders(
         ordered_hhids, advertize_hhids, spenders)
 
-    print('Revenue:', revenue)
-    print('Possible Revenue:', total_revenue)
-    print('Fraction of Possible Revenue:', revenue / total_revenue)
-    print('Number of Responders:', n_responders)
-    print('Possible Number of Responders:', n_total_responders)
-    print('Fraction of Possible Responders', n_responders / n_total_responders)
+    if machine:
+        print("{} {}".format(revenue / total_revenue, n_responders / n_total_responders))
+    else:
+        print('Revenue:', revenue)
+        print('Possible Revenue:', total_revenue)
+        print('Fraction of Possible Revenue:', revenue / total_revenue)
+        print('Number of Responders:', n_responders)
+        print('Possible Number of Responders:', n_total_responders)
+        print('Fraction of Possible Responders', n_responders / n_total_responders)
 
 
 def is_positive_example(line):
